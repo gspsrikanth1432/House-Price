@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-import sklearn
-
-
 
 Status  = {
 "New" : 0,"Ready to move" : 1,"Resale" : 2,"Under Construction" : 3,}
@@ -18,41 +15,28 @@ Facing  = {
 Type  = {
 "Apartment" : 0,"Independent Floor" : 1,"Independent House" : 2,"Residential Plot" : 3,"Studio Apartment" : 4,"Villa" : 5,}
 
-# Loading the model pickle file 
-model=pickle.load(open('Home.pkl','rb'))
-
-#creating the function to accept inputs and creatinh a 2d array and predicting the result
-
-def predict(bed,bath,loc,size,status,facing,Types):
-    """function to string """
-    selected_location=Location[loc]
-    selected_status=Status[status]
-    selected_facing=Facing[facing] 
-    selected_type=Type[Types]
-    input_data = np.array([[bed,bath,selected_location,size,selected_status,selected_facing,selected_type]])
-    result=model.predict(input_data)[0].round(2)
+model=pickle.load(open('House_Price.pkl','br'))
+def predict(bedrooms,bathrooms,status,size,location,facing,type):
+    Selected_location=Location[location]
+    Selected_status=Status[status]
+    Selected_facing=Facing[facing]
+    Selected_type=Type[type]
+    user_input=np.array([[bedrooms,bathrooms,Selected_status,size,Selected_location,Selected_facing,Selected_type]])
+    result=model.predict(user_input)[0].round(2)
     return result
 
 if __name__=="__main__":
-    st.header("House price prediction")
-    
-
-    col1,col2 = st.columns([2,1])
-    bedrooms = col1.slider("NO. of Bedrooms",max_value=10,min_value=1)
-    bathrooms = col1.slider("NO. of Bathrooms",max_value=10,min_value=1)
-    status = col1.selectbox("Select Status:",list(Status.keys()))
-    size = col2.number_input("Enter SQFT:",min_value=500,max_value=10000,value=1000,step=500)
-    location = col1.selectbox("Select Location:",list(Status.keys()))
-    facing = col1.selectbox("Select facing:",list(Facing.keys()))
-    Types = col1.selectbox("Select Types:",list(Type.keys()))
-    result = predict(bedrooms,bathrooms,status,size,location,facing,Types)
-    submit_button = st.button("Predict")
+    st.header('House price prediction') #h1 tag in html
+    col1,col2=st.columns([2,1])
+    bedrooms=col1.slider("No.of Bedrooms:",min_value=1,max_value=10)
+    bathrooms=col1.slider("No.of bathrooms:",min_value=1,max_value=3)
+    status=col1.selectbox("Select Status:",list(Status.keys()))
+    size=col2.number_input("Enter the square feet:",min_value=200,max_value=10000,value=1000,step=500)
+    loc=col2.selectbox("Select Location:",list(Location.keys()))
+    fac=col1.selectbox("Select Facing:",list(Facing.keys()))
+    ty=col2.selectbox("Select Type:",list(Type.keys()))
+    r=predict(bedrooms,bathrooms,status,size,loc,fac,ty)
+    submit_button=st.button(label="Submit")
     if submit_button:
-        larger_text = f"<h2
-        style='color: blue;'>The 
-        Predicted price is : {result}
-        Lakhs</h2>"
-        st.mardown(larger_text,unsafe_allow_html=True)
-
-    
-    
+        larger_text=f"<h2 style='color:blue;'>the predicted price is:{r/100} lakhs</h2>"
+        st.markdown(larger_text,unsafe_allow_html=True)
